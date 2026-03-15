@@ -5,8 +5,11 @@ import at.aau.serg.services.GameResultService
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import org.mockito.Mockito.`when` as whenever // when is a reserved keyword in Kotlin
 
 class LeaderboardControllerTests {
@@ -28,7 +31,7 @@ class LeaderboardControllerTests {
 
         whenever(mockedService.getGameResults()).thenReturn(listOf(second, first, third))
 
-        val res: List<GameResult> = controller.getLeaderboard()
+        val res: List<GameResult> = unwrap(controller.getLeaderboard())
 
         verify(mockedService).getGameResults()
         assertEquals(3, res.size)
@@ -45,13 +48,20 @@ class LeaderboardControllerTests {
 
         whenever(mockedService.getGameResults()).thenReturn(listOf(second, first, third))
 
-        val res: List<GameResult> = controller.getLeaderboard()
+        val res: List<GameResult> = unwrap(controller.getLeaderboard())
 
         verify(mockedService).getGameResults()
         assertEquals(3, res.size)
         assertEquals(first, res[0])
         assertEquals(second, res[1])
         assertEquals(third, res[2])
+    }
+
+    /** Verifies that the [response] status is OK and returns the non-null body. */
+    private fun unwrap(response: ResponseEntity<List<GameResult>>): List<GameResult> {
+        assertEquals(HttpStatus.OK, response.statusCode)
+        assertNotNull(response.body)
+        return response.body!!
     }
 
 }
